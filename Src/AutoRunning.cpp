@@ -15,6 +15,7 @@ void AutoRunning::Init(std::vector<std::array<float, 2>> &point_list, std::vecto
 
 	}
 	passingPointList_ = point_list;
+	//point角度？
 	passingAngleList_ = angle_list;
 	bno055_.AssignI2C(&i2c_handle);
 	catmullRomSpline_.Init(passingPointList_);
@@ -35,13 +36,13 @@ void AutoRunning::UpDate(){
 	BNO055::vector_t bno_vector;
 	static double before_processing_last_yaw = 0.0;
 	static double after_processing_last_yaw = 0.0;
+	double before_processing_now_yaw = 0.0;
 	double after_processing_now_yaw = 0.0;
 	double yaw_difference = 0.0;
-	double before_processing_now_yaw = 0.0;
 	if((sequence_ != Sequence::Emergency) || (sequence_ != Sequence::Init) || (sequence_ != Sequence::UnInit)){
 		return;
 	}
-
+	//１８０どこか聞く
 	bno_vector = bno055_.GetVectorEuler();
 	if(bno_vector.x > 180.0){
 		before_processing_now_yaw = (360.0 - bno_vector.x);
@@ -53,6 +54,7 @@ void AutoRunning::UpDate(){
 	if(yaw_difference > 180.0){
 		yaw_difference = 360.0 - yaw_difference;
 	}else if(yaw_difference < -180.0){
+		//absここだけなぜ
 		yaw_difference = (360.0 - std::abs(yaw_difference)) * (-1);
 	}
 	after_processing_now_yaw = after_processing_last_yaw + yaw_difference;
@@ -71,12 +73,14 @@ void AutoRunning::UpDate(){
 	}
 
 	globalCoordinate_ = selfPosition_.calculationGlobalCoordinates(rawEachAxisEncoder_, pIMUData_.yaw);
-
+	//thisポインタって必要？
 	this->SequenceManagement();
 }
 
 void AutoRunning::SequenceManagement(){
 	Vector turned_next_vector;
+	double passingAngle_difference = 0.0;
+	double target_angle = 0.0;
 	switch(sequence_){
 		case Sequence::UnInit:
 			break;
@@ -89,6 +93,7 @@ void AutoRunning::SequenceManagement(){
 			omuniWheel_.setEachWheelStop();
 			break;
 		case Sequence::DuringAutoRunning:
+			//ｋ理解できない
 			targetPoint_ = catmullRomSpline_.getTargetPoint(nowVector_);
 			if(catmullRomSpline_.get_is_sequence_finish_()){
 				if((std::abs(nowVector_.x) < catmullRomSpline_.kFinishVector)
@@ -101,14 +106,16 @@ void AutoRunning::SequenceManagement(){
 
 			nowVector_.x = (targetPoint_.x - globalCoordinate_.x);
 			nowVector_.y = (targetPoint_.y - globalCoordinate_.y);
-			nowVector_.theta = ((((passingAngleList_.at(catmullRomSpline_.get_sequence_number_() + 1) - passingAngleList_.at(catmullRomSpline_.get_sequence_number_()))
-					/ static_cast<double>(catmullRomSpline_.kMathResolution)) * static_cast<double>(catmullRomSpline_.get_in_sequence_resolution_number_())) + passingAngleList_.at(catmullRomSpline_.get_sequence_number_())) - selfPosition_.get_machine_theta_();
+//			nowVector_.theta = ((((passingAngleList_.at(catmullRomSpline_.get_sequence_number_() + 1) - passingAngleList_.at(catmullRomSpline_.get_sequence_number_()))
+//								/ static_cast<double>(catmullRomSpline_.kMathResolution)) * static_cast<double>(catmullRomSpline_.get_in_sequence_resolution_number_())) + passingAngleList_.at(catmullRomSpline_.get_sequence_number_())) - selfPosition_.get_machine_theta_();
+			passingAngle_difference = passingAngleList_.at(catmullRomSpline_.get_sequence_number_() + 1) - passingAngleList_.at(catmullRomSpline_.get_sequence_number_());
+			target_angle = (((passingAngle_difference/ static_cast<double>(catmullRomSpline_.kMathResolution)) * static_cast<double>(catmullRomSpline_.get_in_sequence_resolution_number_())) + passingAngleList_.at(catmullRomSpline_.get_sequence_number_()));
+			nowVector_.theta = target_angle - selfPosition_.get_machine_theta_();
+			//-1と45はかえよう
 			turned_next_vector = omuniWheel_.turnCoordinate(nowVector_, selfPosition_.get_machine_theta_() * (-1));
-
 			turned_next_vector.x = (turned_next_vector.x / 45) * (-1);
 			turned_next_vector.y = (turned_next_vector.y / 45) * (-1);
 			turned_next_vector.theta = (turned_next_vector.theta / 20) * (-1);
-
 			if(!(sequence_ == Sequence::Emergency)){
 				result_data_ = omuniWheel_.calEachWheelSpeed(turned_next_vector);
 			}
@@ -120,8 +127,4 @@ void AutoRunning::SequenceManagement(){
 			omuniWheel_.enableEmergency();
 			break;
 	}
-}
-
-void calVector(){
-
 }
