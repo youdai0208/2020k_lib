@@ -15,7 +15,6 @@ void AutoRunning::Init(std::vector<std::array<float, 2>> &point_list, std::vecto
 
 	}
 	passingPointList_ = point_list;
-	//point角度？
 	passingAngleList_ = angle_list;
 	bno055_.AssignI2C(&i2c_handle);
 	catmullRomSpline_.Init(passingPointList_);
@@ -42,19 +41,17 @@ void AutoRunning::UpDate(){
 	if((sequence_ != Sequence::Emergency) || (sequence_ != Sequence::Init) || (sequence_ != Sequence::UnInit)){
 		return;
 	}
-	//１８０どこか聞く
 	bno_vector = bno055_.GetVectorEuler();
 	if(bno_vector.x > 180.0){
 		before_processing_now_yaw = (360.0 - bno_vector.x);
 	}else {
 		before_processing_now_yaw = bno_vector.x * (-1);
 	}
-
+	//.よくわからない
 	yaw_difference = before_processing_now_yaw - before_processing_last_yaw;
 	if(yaw_difference > 180.0){
 		yaw_difference = 360.0 - yaw_difference;
 	}else if(yaw_difference < -180.0){
-		//absここだけなぜ
 		yaw_difference = (360.0 - std::abs(yaw_difference)) * (-1);
 	}
 	after_processing_now_yaw = after_processing_last_yaw + yaw_difference;
@@ -93,13 +90,12 @@ void AutoRunning::SequenceManagement(){
 			omuniWheel_.setEachWheelStop();
 			break;
 		case Sequence::DuringAutoRunning:
-			//ｋ理解できない
 			targetPoint_ = catmullRomSpline_.getTargetPoint(nowVector_);
 			if(catmullRomSpline_.get_is_sequence_finish_()){
 				if((std::abs(nowVector_.x) < catmullRomSpline_.kFinishVector)
 						&& (std::abs(nowVector_.y) < catmullRomSpline_.kFinishVector)
 						&& (std::abs(nowVector_.theta) < 2.0)){
-					sequence_ = Sequence::FiniahAutoRunning;
+					sequence_ = Sequence::FinishAutoRunning;
 					break;
 				}
 			}
@@ -120,7 +116,7 @@ void AutoRunning::SequenceManagement(){
 				result_data_ = omuniWheel_.calEachWheelSpeed(turned_next_vector);
 			}
 			break;
-		case Sequence::FiniahAutoRunning:
+		case Sequence::FinishAutoRunning:
 			omuniWheel_.setEachWheelStop();
 			break;
 		default:

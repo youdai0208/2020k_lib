@@ -132,9 +132,8 @@ EachAxisEncoder wheelOdometry::calculationEachEncoderVector(const RawEachAxisEnc
 	set_machine_theta(machine_theta);
 
 	if((each_axis_encoder_value.at(0) != 0) || (each_axis_encoder_value.at(1) != 0)){
-		//xとyだけど1と2で扱ってほしい。（理由はクラスのほうに書いてる）
-		calAfterEachAxisEncoder_.x = each_axis_encoder_value.at(0);
-		calAfterEachAxisEncoder_.y = each_axis_encoder_value.at(1);
+		calAfterEachAxisEncoder_.encoder1 = each_axis_encoder_value.at(0);
+		calAfterEachAxisEncoder_.encoder2 = each_axis_encoder_value.at(1);
 
 		return calAfterEachAxisEncoder_;
 	}else {
@@ -150,13 +149,16 @@ AmountOfMovement wheelOdometry::calculationAmountOfMovement(const EachAxisEncode
 	right_tire_angular_velocity_ = (right_tire_theta_ - last_right_tire_theta_)/kControlCycle;
 	left_tire_angular_velocity_  = (left_tire_theta_ - last_left_tire_theta_)/kControlCycle;
 
-
-	machine_speed_ = ((kTireRadius/2)*right_tire_angular_velocity_)+((kTireRadius/2)*left_tire_angular_velocity_);
-
 	machine_angular_velocity_ = movement_machine_theta() / kControlCycle;
-	amountOfMovement_.x = (2*machine_speed_ / machine_angular_velocity_)*cos(get_machine_theta() + (movement_machine_theta()/2))*sin(movement_machine_theta()/2);
-	amountOfMovement_.y = (2*machine_speed_ / machine_angular_velocity_)*sin(get_machine_theta() + (movement_machine_theta()/2))*sin(movement_machine_theta()/2);
-
+	if (machine_angular_velocity_ == 0) {
+		//.マシーン角速度が０の時計算すると発散するのでその時の計算
+		amountOfMovement_.x = machine_speed() * kControlCycle * cos(get_machine_theta());
+		amountOfMovement_.y = machine_speed() * kControlCycle * sin(get_machine_theta());
+	}
+	else {
+		amountOfMovement_.x = (2 * machine_speed() / machine_angular_velocity_) * cos(get_machine_theta() + (movement_machine_theta() / 2)) * sin(movement_machine_theta() / 2);
+		amountOfMovement_.y = (2 * machine_speed() / machine_angular_velocity_) * sin(get_machine_theta() + (movement_machine_theta() / 2)) * sin(movement_machine_theta() / 2);
+	}
 	last_right_tire_theta_ = right_tire_theta_;
 	last_left_tire_theta_  = left_tire_theta_;
 

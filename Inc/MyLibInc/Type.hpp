@@ -38,6 +38,11 @@ struct EachAxisEncoder {
 	double y;
 };
 
+struct EachAxisEncoderWheelOdometry {
+	double encoder1;
+	double encoder2;
+};
+
 struct RawEachAxisEncoder {
 	uint32_t x;
 	uint32_t y;

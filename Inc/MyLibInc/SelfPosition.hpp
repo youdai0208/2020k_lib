@@ -18,7 +18,7 @@
 #include "MyLibInc/Type.hpp"
 
 class SelfPosition {
-	public:
+public:
 	static constexpr double kxEncoderRelativeAngle = -180.0;  //(�ｿｽ�ｿｽ)
 	static constexpr double kyEncoderRelativeAngle = 90.0;  //(�ｿｽ�ｿｽ)
 	static constexpr double kxEncoderRelativeDistance = 271.740;  //(mm)
