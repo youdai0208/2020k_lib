@@ -24,7 +24,7 @@ class AutoRunning {
 			Emergency,
 			Waiting,
 			DuringAutoRunning,
-			FiniahAutoRunning,
+			FinishAutoRunning,
 		};
 		std::array<double, 4> result_data_ = {0.0};
 		void Init(std::vector<std::array<float, 2>> &point_list, std::vector<double> &angle_list,
@@ -52,6 +52,7 @@ class AutoRunning {
 		std::vector<std::array<float, 2>> passingPointList_;
 		std::vector<double> passingAngleList_;
 		Sequence sequence_ = Sequence::UnInit;
+
 		Sequence escapeSequence_ = Sequence::UnInit;
 		Vector nowVector_ = {.x = 0.0, .y = 0.0, .theta = 0.0};
 		Coordinate globalCoordinate_ = {.x = 0.0, .y = 0.0};
@@ -66,9 +67,7 @@ class AutoRunning {
 
 		void calVector();
 		void SequenceManagement();
-		double CalSpeedCoefficient(const double target_meter_per_sec){
-//			return (catmullRomSpline_.kChengeVector * 10.0) /
-		}
+		double CalSpeedCoefficient(const double target_meter_per_sec)/*{return (catmullRomSpline_.kChengeVector * 10.0) /}*/;
 
 };
 
