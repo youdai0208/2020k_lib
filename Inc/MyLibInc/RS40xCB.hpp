@@ -35,23 +35,22 @@ public:
     inline void clear_longpacketServoId(){longpacketServoId_.clear();}
     inline void clear_longpacketServoData(){longpacketServoData_.clear();}
 
-private:
-    //Header
-    uint8_t kHeader_HighByte = 0xFA;
-	uint8_t kHeader_LowByte  = 0xAF;
+	//Header
+	uint8_t kHeader_HighByte = 0xFA;
+	uint8_t kHeader_LowByte = 0xAF;
 	uint8_t kHeader_ALLSERVO = 0xFF;
 	//Adress
-    uint8_t kAdr_ID = 0x04;
+	uint8_t kAdr_ID = 0x04;
 	uint8_t kAdr_GOALPOSITION_L = 0x1E;
 	uint8_t kAdr_TorqueOnOff = 0x24;
 	//Flags
-	uint8_t kFlag_WRITEFLASHROM  = 0x40;
+	uint8_t kFlag_WRITEFLASHROM = 0x40;
 	uint8_t kFlag_REBOOT = 0x20;
 	//Data
 	uint8_t kData_TorqueOn = 0x01;
 	uint8_t kData_torqueOff = 0x00;
 
-
+private:
 	std::vector<uint8_t> shortpacketServoData_;
 	std::vector<uint8_t> longpacketServoId_;
 	std::vector<std::vector<uint8_t>> longpacketServoData_;
